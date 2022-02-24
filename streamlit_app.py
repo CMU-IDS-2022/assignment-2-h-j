@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.title("Let's analyze some Autonomous Vehicle Data 🚗📊.")
+st.title("Let's analyze some Autonomous Vehicle Data, collected from Pittsburgh residents 🚗📊.")
 
 @st.cache  # add caching so we load the data only once
 def load_data_nine():
@@ -23,13 +23,13 @@ df_nine = load_data_nine()
 
 df_seven = load_data_seven()
 
-st.write("Let's look at raw data for 2019 in the Pandas Data Frame.")
-
-st.write(df_nine)
-
-st.write("Now, let's look at raw data for 2017 in the Pandas Data Frame.")
+st.write("Let's look at raw data for 2017 in the Pandas Data Frame.")
 
 st.write(df_seven)
+
+st.write("Now, let's look at raw data for 2019 in the Pandas Data Frame.")
+
+st.write(df_nine)
 
 st.write("Hmm 🤔, is there some correlation between familiarity with autonomous vehicles and approval of Pittsburgh as a proving ground for them? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find out.")
 
@@ -50,7 +50,13 @@ hist_2019 = alt.Chart(df_nine).mark_bar(
 ).encode(
     # alt.X("ProvingGround", type="nominal"),
     # alt.Y(aggregate="count", type="quantitative")
-    alt.X("ProvingGround", type="nominal", axis = alt.Axis(title="Proving Ground Approval, 2019")),
+    alt.X("ProvingGround", type="nominal", axis = alt.Axis(title="Proving Ground Approval, 2019"), sort=[
+        'Approve',
+        'Somewhat Approve',
+        'Neutral',
+        'Somewhat Disapprove',
+        'Disapprove',
+        'nan']),
     y='count()',
     #alt.Color("Species", scale=alt.Scale(domain=["Adelie", "Chinstrap", "Gentoo"], range=["orangered", "purple", "seagreen"]))
 ).properties(
@@ -62,7 +68,13 @@ hist_2017 = alt.Chart(df_seven).mark_bar(
 ).encode(
     # alt.X("ProvingGround", type="nominal"),
     # alt.Y(aggregate="count", type="quantitative")
-    alt.X("FeelingsProvingGround", type="nominal", axis = alt.Axis(title="Proving Ground Approval, 2017")),
+    alt.X("FeelingsProvingGround", type="nominal", axis = alt.Axis(title="Proving Ground Approval, 2017"), sort=[
+        'Approve',
+        'Somewhat Approve',
+        'Neutral',
+        'Somewhat Disapprove',
+        'Disapprove',
+        'nan']),
     y='count()',
     #alt.Color("Species", scale=alt.Scale(domain=["Adelie", "Chinstrap", "Gentoo"], range=["orangered", "purple", "seagreen"]))
 ).properties(
@@ -71,5 +83,36 @@ hist_2017 = alt.Chart(df_seven).mark_bar(
 
 pg_compare = alt.hconcat(hist_2017, hist_2019)
 st.write(pg_compare)
+
+st.write("There doesn't seem to be much of a difference between 2017 and 2019 based on the charts above. Let's try another way of investigating our question by looking at the interaction between **approval of Pittsburgh as a proving ground in 2019** and **impact of the 2018 Arizona Uber crash** from the 2019 data.")
+
+pg_brush = alt.selection_multi(fields=['ProvingGround'])
+arizona_brush = alt.selection_multi(fields=['ArizonaCrash'])
+pg_2019_chart = alt.Chart(df_nine, title='Proving Ground Approval, 2019').transform_filter(arizona_brush).mark_bar().encode(
+    x='count()',
+    y= alt.Y('ProvingGround', type="nominal", sort=[
+        'Approve',
+        'Somewhat Approve',
+        'Neutral',
+        'Somewhat Disapprove',
+        'Disapprove',
+        'nan']),
+    color=alt.condition(pg_brush, alt.value('steelblue'), alt.value('lightgray'))
+).add_selection(pg_brush).interactive()
+arizona_chart = alt.Chart(df_nine, title='Impact of 2018 Arizona Uber Crash on AV Opinion').transform_filter(pg_brush).mark_bar().encode(
+    x='count()',
+    y=alt.Y('ArizonaCrash', sort=[
+        'Significantly more negative opinion',
+        'Somewhat more negative opinion',
+        'No change',
+        'Somewhat more positive opinion',
+        'Significantly more positive opinion',
+        'nan']),
+    color=alt.condition(arizona_brush, alt.value('salmon'), alt.value('lightgray'))
+).add_selection(arizona_brush).interactive()
+
+st.altair_chart(pg_2019_chart & arizona_chart)
+
+st.write("From the charts above, it appears that for the majority of survey responders, the 2018 crash did not impact their opnions on AVs, and most Pittsburghers still approve of Pittsburgh as a testing groundfor AVs. Unsurprisingly, however, residents who responded **Significantly more negative opinion** to the Arizona Crash question mostly disapproved of using Pittsburgh as a proving ground.")
 
 st.markdown("This project was created by Healy Dwyer and Jacqueline Liao for the [Interactive Data Science](https://dig.cmu.edu/ids2022) course at [Carnegie Mellon University](https://www.cmu.edu).")
