@@ -31,19 +31,7 @@ st.write("Now, let's look at raw data for 2019 in the Pandas Data Frame.")
 
 st.write(df_nine)
 
-st.write("Hmm 🤔, is there some correlation between familiarity with autonomous vehicles and approval of Pittsburgh as a proving ground for them? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find out.")
-
-chart = alt.Chart(df_nine).mark_point().encode(
-    x=alt.X("FamiliarityTech", scale=alt.Scale(zero=False)),
-    y=alt.Y("SafeAv", scale=alt.Scale(zero=False)),
-    color=alt.Y("ProvingGround")
-).properties(
-    width=600, height=400
-).interactive()
-
-st.write(chart)
-
-st.write("Is there a difference between 2017 and 2019 for the approval of Pittsburgh as a proving gound for AV testing? Let's compare bar charts with [Altair](https://altair-viz.github.io/) to find out.")
+st.write("Hmm 🤔, is there a difference between 2017 and 2019 for the approval of Pittsburgh as a proving gound for AV testing? Let's compare bar charts with [Altair](https://altair-viz.github.io/) to find out.")
 
 hist_2019 = alt.Chart(df_nine).mark_bar(
     tooltip=True
@@ -114,5 +102,34 @@ arizona_chart = alt.Chart(df_nine, title='Impact of 2018 Arizona Uber Crash on A
 st.altair_chart(pg_2019_chart & arizona_chart)
 
 st.write("From the charts above, it appears that for the majority of survey responders, the 2018 crash did not impact their opnions on AVs, and most Pittsburghers still approve of Pittsburgh as a testing groundfor AVs. Unsurprisingly, however, residents who responded **Significantly more negative opinion** to the Arizona Crash question mostly disapproved of using Pittsburgh as a proving ground.")
+
+st.write("Lastly, we're interested in finding out if people feel safer sharing the road with human drivers vs AVs. Do people trust their fellow humans or robots more? Let's look at the 2019 data to see.")
+
+hist_humans = alt.Chart(df_nine).mark_bar(size=20,
+    tooltip=True
+).encode(
+     x=alt.X('SafeHuman', sort='-y', axis = alt.Axis(title="Safety Sharing Road with Human Drivers. (0 = Very Unsafe, 5 = Very Safe)", tickMinStep=1)),
+     y='count()',
+).properties(
+	width=300, height=400
+).interactive()
+
+selection = alt.selection_multi(fields=['SafeAv'], bind='legend')
+
+hist_avs = alt.Chart(df_nine).mark_bar(size=20,
+    tooltip=True
+).encode(
+     x=alt.X('SafeAv', sort='-y', axis = alt.Axis(title="Safety Sharing Road with AVs. (0 = Very Unsafe, 5 = Very Safe)", tickMinStep=1)),
+     y='count()',
+).properties(
+	width=300, height=400
+).interactive().add_selection(
+    selection
+)
+
+human_av_compare = alt.hconcat(hist_humans, hist_avs)
+st.write(human_av_compare)
+
+st.write("Interestingly enough, it appears that people feel more safe overall sharing the road with AVs than with human drivers. What are your theories as to why this is?")
 
 st.markdown("This project was created by Healy Dwyer and Jacqueline Liao for the [Interactive Data Science](https://dig.cmu.edu/ids2022) course at [Carnegie Mellon University](https://www.cmu.edu).")
