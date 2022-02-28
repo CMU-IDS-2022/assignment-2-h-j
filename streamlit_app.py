@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.title("Let's analyze some Autonomous Vehicle Data, collected from Pittsburgh residents 🚗📊.")
+st.title("Let's analyze some data about autonomous vehicles, collected from Pittsburgh residents 🚗📊.")
 
 @st.cache  # add caching so we load the data only once
 def load_data_nine():
@@ -23,7 +23,9 @@ df_nine = load_data_nine()
 
 df_seven = load_data_seven()
 
-st.write("Let's look at raw data for 2017 in the Pandas Data Frame.")
+st.write("We're interested in seeing how opinions about AVs and using Pittsburgh as a testing 'Proving Ground' for AVs have changed from 2017 to 2019.")
+
+st.write("First, Let's look at raw data for 2017 in the Pandas Data Frame.")
 
 st.write(df_seven)
 
